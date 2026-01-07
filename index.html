@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EnergyWork Miner - Proof of Work Token</title>
-    <script src="https://cdn.ethers.io/lib/ethers-6.13.1.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
@@ -276,11 +276,16 @@
     </div>
 
     <script>
+        // Wait for ethers to be loaded
+        window.addEventListener('load', function() {
+            console.log('Ethers loaded:', typeof ethers !== 'undefined');
+            initApp();
+        });
+
         const CONTRACT_ADDRESS = "0xb5e3fe1a9118f5ec13e36ddcb3c1d600a01918";
         
         let provider, signer, contract, userAddress;
         let isMining = false;
-        let miningLoop = null;
 
         const CONTRACT_ABI = [
             "function mine(uint256)",
@@ -292,8 +297,18 @@
             "function TARGET() view returns(uint256)"
         ];
 
+        function initApp() {
+            updateStatus("Connect wallet to begin mining", "idle");
+        }
+
         async function connectWallet() {
             try {
+                // Check if ethers is loaded
+                if (typeof ethers === 'undefined') {
+                    alert("Loading libraries... Please wait a moment and try again.");
+                    return;
+                }
+
                 if (!window.ethereum) {
                     alert("MetaMask is required!\n\nPlease install MetaMask from https://metamask.io");
                     return;
@@ -313,7 +328,8 @@
 
                 // Get network info
                 const network = await provider.getNetwork();
-                document.getElementById("networkName").textContent = network.name || `Chain ID: ${network.chainId}`;
+                const networkName = network.name === 'unknown' ? `Chain ID: ${network.chainId}` : network.name;
+                document.getElementById("networkName").textContent = networkName;
                 
                 // Update UI
                 document.getElementById("walletAddress").textContent = 
@@ -535,11 +551,6 @@
                 location.reload();
             });
         }
-
-        // Initialize on load
-        window.addEventListener('load', () => {
-            updateStatus("Connect wallet to begin mining", "idle");
-        });
     </script>
 </body>
 </html>
