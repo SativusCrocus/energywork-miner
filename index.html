@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EnergyWork Miner - Proof of Work Token</title>
     
-    <!-- Reliable ethers.js v6 CDN (jsDelivr - fast & always available) -->
+    <!-- Reliable ethers.js v6 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js" crossorigin="anonymous"></script>
     
     <!-- Tailwind CSS CDN -->
@@ -145,26 +145,13 @@
                                 </li>
                                 <li class="flex items-start gap-2">
                                     <span class="text-cyan-400 mt-0.5">✓</span>
-                                    <span>MetaMask unlocked with account</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-cyan-400 mt-0.5">✓</span>
                                     <span>ETH for transaction gas fees</span>
                                 </li>
                                 <li class="flex items-start gap-2">
                                     <span class="text-cyan-400 mt-0.5">✓</span>
-                                    <span>Any Ethereum-compatible network</span>
+                                    <span>Desktop browser recommended for mining</span>
                                 </li>
                             </ul>
-                            
-                            <div class="mt-4 p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
-                                <p class="text-xs text-yellow-400 font-semibold mb-1">⚠️ Connection Issues?</p>
-                                <ul class="text-xs text-yellow-300/80 space-y-1">
-                                    <li>• Make sure MetaMask is unlocked</li>
-                                    <li>• Accept the connection popup</li>
-                                    <li>• Refresh if MetaMask seems stuck</li>
-                                </ul>
-                            </div>
                         </div>
                     </div>
                     
@@ -197,7 +184,7 @@
                         <li>• Browser-based proof of work</li>
                         <li>• Rewards halve every 210,000 blocks</li>
                         <li>• No downloads required</li>
-                        <li>• Instant on-chain verification</li>
+                        <li>• Best on desktop (mobile throttled)</li>
                     </ul>
                 </div>
             </div>
@@ -290,90 +277,75 @@
     
     <script>
         const CONTRACT_ADDRESS = "0xb5e3fe1a9118f5ec13e36ddcb3c1d600a01918";
+        
+        // Hard-coded TARGET constant (from contract - no need to fetch)
+        const TARGET = BigInt("0x00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        
         const CONTRACT_ABI = [
             "function mine(uint256)",
             "function balanceOf(address) view returns(uint256)",
             "function totalSupply() view returns(uint256)",
             "function currentReward() view returns(uint256)",
             "function miningCount() view returns(uint256)",
-            "function challenge() view returns(uint256)",
-            "function TARGET() view returns(uint256)"
+            "function challenge() view returns(uint256)"
         ];
         
         let provider, signer, contract, userAddress;
         let isMining = false;
         let statsInterval;
         
-        // Initialize on load
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof ethers === 'undefined') {
-                updateStatus("Error: ethers.js failed to load. Refresh the page.", "error");
+                updateStatus("Error: ethers.js failed to load. Refresh page.", "error");
                 return;
             }
-            updateStatus("Connect wallet to begin mining", "idle");
+            
+            // Mobile warning
+            if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
+                updateStatus("Mobile detected: Mining throttled. Use desktop for best performance.", "idle");
+            } else {
+                updateStatus("Connect wallet to begin mining", "idle");
+            }
         });
         
         async function connectWallet() {
             if (typeof ethers === 'undefined') {
-                alert("ethers.js not loaded. Please refresh the page.");
+                alert("ethers.js not loaded. Refresh page.");
                 return;
             }
             
             if (!window.ethereum) {
-                alert("MetaMask not detected! Please install MetaMask from https://metamask.io");
+                alert("MetaMask not detected! Install from https://metamask.io");
                 return;
             }
             
             try {
                 updateStatus("Requesting access...", "connecting");
                 
-                // Request accounts using ethereum.request method (more reliable)
-                let accounts;
-                try {
-                    accounts = await window.ethereum.request({ 
-                        method: 'eth_requestAccounts' 
-                    });
-                } catch (error) {
-                    if (error.code === 4001 || error.code === 'ACTION_REJECTED') {
-                        // User rejected the request
-                        updateStatus("Connection cancelled", "idle");
-                        alert("Connection cancelled. Please accept the MetaMask connection request to continue.");
-                        return;
-                    }
-                    throw error;
-                }
-                
-                if (!accounts || accounts.length === 0) {
-                    alert("No accounts found in MetaMask.\n\nPlease:\n1. Unlock MetaMask\n2. Create or import an account\n3. Try connecting again");
-                    updateStatus("No accounts found", "error");
-                    return;
-                }
-                
                 provider = new ethers.BrowserProvider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                
                 signer = await provider.getSigner();
                 userAddress = await signer.getAddress();
                 
                 const network = await provider.getNetwork();
-                const networkName = network.name === 'unknown' ? `Chain ID: ${network.chainId}` : network.name.charAt(0).toUpperCase() + network.name.slice(1);
+                const networkName = network.name === 'homestead' ? 'Mainnet' : network.name.charAt(0).toUpperCase() + network.name.slice(1);
                 document.getElementById("networkName").textContent = networkName;
                 
-                // UI updates
                 document.getElementById("walletAddress").textContent = userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
                 document.getElementById("disconnectedState").classList.add("hidden");
                 document.getElementById("connectedState").classList.remove("hidden");
                 
-                // Contract
                 contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
                 await refreshStats();
                 
-                // Auto-refresh stats every 30s
                 statsInterval = setInterval(refreshStats, 30000);
                 
                 updateStatus("Connected! Ready to mine", "ready");
                 document.getElementById("miningButton").disabled = false;
             } catch (error) {
                 console.error(error);
-                updateStatus("Connection failed: " + (error.message || "Unknown error"), "error");
+                updateStatus("Connection failed: " + (error.message || "Rejected"), "error");
             }
         }
         
@@ -402,7 +374,7 @@
                 ]);
                 
                 document.getElementById("balance").textContent = parseFloat(ethers.formatEther(bal)).toFixed(4);
-                document.getElementById("supply").textContent = parseFloat(ethers.formatEther(sup)).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                document.getElementById("supply").textContent = parseFloat(ethers.formatEther(sup)).toLocaleString(undefined, {minimumFractionDigits: 0});
                 document.getElementById("reward").textContent = parseFloat(ethers.formatEther(rew)).toFixed(2);
                 
                 const era = Math.floor(Number(count) / 210000);
@@ -410,7 +382,7 @@
                 document.getElementById("era").textContent = era;
                 document.getElementById("remaining").textContent = remaining.toLocaleString();
             } catch (error) {
-                console.error("Stats refresh error:", error);
+                console.error("Stats error:", error);
             }
         }
         
@@ -449,7 +421,7 @@
             
             try {
                 updateStatus("Fetching challenge...", "mining");
-                const [challenge, target] = await Promise.all([contract.challenge(), contract.TARGET()]);
+                const challenge = await contract.challenge(); // Only fetch challenge
                 
                 let nonce = 0n;
                 let hashes = 0n;
@@ -470,7 +442,7 @@
                         startTime = performance.now();
                     }
                     
-                    if (BigInt(hash) < BigInt(target)) {
+                    if (BigInt(hash) < TARGET) {
                         updateStatus("Solution found! Submitting...", "submitting");
                         try {
                             const tx = await contract.mine(nonce);
@@ -482,15 +454,17 @@
                             return;
                         } catch (err) {
                             console.error(err);
-                            updateStatus("Tx failed, retrying...", "error");
+                            updateStatus("Tx failed, retrying new challenge...", "error");
+                            // Fetch fresh challenge on tx fail
+                            return mineLoop();
                         }
                     }
                     nonce++;
                 }
             } catch (error) {
                 console.error(error);
-                updateStatus("Mining error: " + error.message, "error");
-                stopMining();
+                updateStatus("Error: " + (error.message || "Unknown"), "error");
+                setTimeout(() => isMining && mineLoop(), 3000);
             }
         }
         
@@ -517,7 +491,6 @@
             text.className = `text-xs ${state === 'error' ? 'text-red-400' : 'text-gray-400'}`;
         }
         
-        // MetaMask events
         if (window.ethereum) {
             window.ethereum.on('accountsChanged', (accounts) => {
                 if (accounts.length === 0) disconnectWallet();
