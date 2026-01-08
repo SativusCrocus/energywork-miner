@@ -22,7 +22,7 @@ EW embodies that truth.
 - **Fully verified & transparent**: Source code verified on Etherscan
 
 ### Live Miner
-👉 [**Mine Now — Instant Browser Mining**](https://sativuscrocus.github.io/energywork-miner/energywork-miner.html)
+👉 [**Mine Now — Instant Browser Mining**](https://sativuscrocus.github.io/energywork-miner)
 
 1. Open the link above
 2. Connect MetaMask (Ethereum Mainnet)
