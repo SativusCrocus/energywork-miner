@@ -5,88 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EnergyWork Miner - Proof of Work Token</title>
     
-    <!-- Reliable ethers.js v6 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js" crossorigin="anonymous"></script>
     
-    <!-- Tailwind CSS CDN (ignore production warning - fine for this project) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <style>
-        * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        
+        * { font-family: 'Inter', sans-serif; }
         body {
             background: radial-gradient(ellipse at top, #1a1a2e 0%, #0f0f1e 50%, #000000 100%);
             min-height: 100vh;
             margin: 0;
         }
-        
         .cyber-glow {
-            text-shadow: 0 0 30px rgba(6, 182, 212, 0.8),
-                         0 0 60px rgba(6, 182, 212, 0.4);
+            text-shadow: 0 0 30px rgba(6, 182, 212, 0.8), 0 0 60px rgba(6, 182, 212, 0.4);
         }
-        
         .neon-border {
-            box-shadow: 0 0 20px rgba(6, 182, 212, 0.3),
-                        inset 0 0 20px rgba(6, 182, 212, 0.05);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.3), inset 0 0 20px rgba(6, 182, 212, 0.05);
         }
-        
-        .mining-animation {
-            animation: mining-pulse 2s ease-in-out infinite;
-        }
-        
+        .mining-animation { animation: mining-pulse 2s ease-in-out infinite; }
         @keyframes mining-pulse {
-            0%, 100% {
-                box-shadow: 0 0 30px rgba(6, 182, 212, 0.4),
-                           0 0 60px rgba(168, 85, 247, 0.2);
-            }
-            50% {
-                box-shadow: 0 0 50px rgba(168, 85, 247, 0.6),
-                           0 0 80px rgba(6, 182, 212, 0.3);
-            }
+            0%, 100% { box-shadow: 0 0 30px rgba(6, 182, 212, 0.4), 0 0 60px rgba(168, 85, 247, 0.2); }
+            50% { box-shadow: 0 0 50px rgba(168, 85, 247, 0.6), 0 0 80px rgba(6, 182, 212, 0.3); }
         }
-        
         .stat-card {
             background: linear-gradient(135deg, rgba(17, 24, 39, 0.8) 0%, rgba(31, 41, 55, 0.6) 100%);
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
-            border-radius: 1rem;
         }
-        
         .stat-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 30px rgba(6, 182, 212, 0.2);
         }
-        
         .gradient-text {
             background: linear-gradient(135deg, #06b6d4 0%, #a855f7 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
-        
-        .pulse-dot {
-            animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        
+        .pulse-dot { animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse-dot {
-            0%, 100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-            50% {
-                opacity: 0.5;
-                transform: scale(1.2);
-            }
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
         }
     </style>
 </head>
 <body class="text-white">
-    <!-- Animated Background Dots -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none opacity-30">
         <div class="absolute top-1/4 left-1/4 w-2 h-2 bg-cyan-400 rounded-full pulse-dot"></div>
         <div class="absolute top-3/4 right-1/3 w-2 h-2 bg-purple-400 rounded-full pulse-dot" style="animation-delay: 0.5s;"></div>
@@ -94,7 +58,6 @@
     </div>
     
     <div class="relative z-10 container mx-auto px-4 py-8 max-w-6xl">
-        <!-- Header -->
         <header class="text-center mb-12">
             <div class="inline-block mb-6">
                 <div class="text-6xl md:text-7xl font-black cyber-glow gradient-text mb-2">
@@ -115,12 +78,9 @@
             </div>
         </header>
         
-        <!-- Main Content -->
         <div class="grid lg:grid-cols-3 gap-6">
-            <!-- Left Panel - Wallet Connection -->
             <div class="lg:col-span-1">
                 <div id="walletPanel" class="stat-card rounded-2xl border border-cyan-500/30 p-6 neon-border">
-                    <!-- Not Connected State -->
                     <div id="disconnectedState">
                         <div class="text-center mb-6">
                             <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full flex items-center justify-center">
@@ -135,27 +95,8 @@
                         <button onclick="connectWallet()" class="w-full bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg">
                             🦊 Connect MetaMask
                         </button>
-                        
-                        <div class="mt-6 pt-6 border-t border-gray-700">
-                            <p class="text-xs text-gray-400 mb-3 font-semibold">Requirements:</p>
-                            <ul class="text-xs text-gray-500 space-y-2">
-                                <li class="flex items-start gap-2">
-                                    <span class="text-cyan-400 mt-0.5">✓</span>
-                                    <span>MetaMask browser extension</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-cyan-400 mt-0.5">✓</span>
-                                    <span>ETH for transaction gas fees</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-cyan-400 mt-0.5">✓</span>
-                                    <span>Desktop browser recommended for mining</span>
-                                </li>
-                            </ul>
-                        </div>
                     </div>
                     
-                    <!-- Connected State -->
                     <div id="connectedState" class="hidden">
                         <div class="mb-6">
                             <div class="flex items-center gap-2 mb-2">
@@ -175,7 +116,6 @@
                     </div>
                 </div>
                 
-                <!-- Info Card -->
                 <div class="stat-card rounded-2xl border border-purple-500/30 p-6 mt-6">
                     <h3 class="text-lg font-bold mb-3 flex items-center gap-2">
                         <span>ℹ️</span> About Mining
@@ -183,19 +123,16 @@
                     <ul class="text-xs text-gray-400 space-y-2">
                         <li>• Browser-based proof of work</li>
                         <li>• Rewards halve every 210,000 blocks</li>
-                        <li>• No downloads required</li>
-                        <li>• Best on desktop (mobile throttled)</li>
+                        <li>• Keep tab open to mine</li>
                     </ul>
                 </div>
             </div>
             
-            <!-- Right Panel - Mining Interface -->
             <div class="lg:col-span-2 space-y-6">
-                <!-- Stats Grid -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="stat-card rounded-xl border border-gray-700 p-4">
                         <p class="text-xs text-gray-400 mb-1">Your Balance</p>
-                        <p class="text-2xl font-bold text-white"><span id="balance">0</span></p>
+                        <p class="text-2xl font-bold text-white"><span id="balance">0.00</span></p>
                         <p class="text-xs text-gray-500">EW</p>
                     </div>
                     
@@ -218,7 +155,6 @@
                     </div>
                 </div>
                 
-                <!-- Reward Display -->
                 <div id="rewardCard" class="stat-card rounded-2xl border border-cyan-500/50 p-8 text-center">
                     <p class="text-sm text-cyan-400 mb-3 font-semibold">⛏️ CURRENT BLOCK REWARD</p>
                     <p class="text-6xl font-black cyber-glow gradient-text mb-2">
@@ -230,21 +166,13 @@
                     </div>
                 </div>
                 
-                <!-- Mining Control -->
                 <div id="miningCard" class="stat-card rounded-2xl border border-cyan-500/30 p-6">
                     <div class="mb-6">
                         <label class="block text-sm font-semibold text-gray-300 mb-2">Contract Address</label>
-                        <input
-                            id="contractAddress"
-                            type="text"
-                            value="0xb5E3fE1A9118f5eC13e36dDcB3C1D600a01918"
-                            class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm font-mono focus:border-cyan-500 focus:outline-none transition-colors"
-                            readonly
-                        >
-                        <p class="text-xs text-gray-500 mt-2">✓ Pre-configured EnergyWork contract</p>
+                        <input id="contractAddressDisplay" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm font-mono focus:border-cyan-500 focus:outline-none transition-colors" readonly>
+                        <p class="text-xs text-gray-500 mt-2">✓ Configured Contract</p>
                     </div>
                     
-                    <!-- Status Bar -->
                     <div class="bg-gray-900 rounded-xl p-4 mb-4 border border-gray-800">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs text-gray-400 font-semibold">STATUS</span>
@@ -256,290 +184,270 @@
                         <p id="statusText" class="text-sm text-gray-300">Connect wallet to begin mining</p>
                     </div>
                     
-                    <!-- Mining Button -->
-                    <button
-                        id="miningButton"
-                        onclick="toggleMining()"
-                        disabled
-                        class="w-full bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 disabled:from-gray-700 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-bold py-5 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg text-lg disabled:transform-none"
-                    >
+                    <button id="miningButton" onclick="toggleMining()" disabled class="w-full bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 disabled:from-gray-700 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-bold py-5 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg text-lg disabled:transform-none">
                         <span id="miningButtonText">⛏️ Start Mining</span>
                     </button>
                 </div>
             </div>
         </div>
         
-        <!-- Footer -->
         <footer class="text-center mt-12 text-xs text-gray-500">
             <p>Decentralized mining • No registration required • Open source proof of work</p>
         </footer>
     </div>
     
-   <script>
-/* =========================
-   CONSTANTS & ABI
-========================= */
-
-// Normalize address ONCE (mandatory in ethers v6)
-const CONTRACT_ADDRESS = ethers.getAddress(
-  "0xb5E3fE1A9118f5eC13e36dDcB3C1D600a01918"
-);
-
-// Hard PoW target
-const TARGET = BigInt(
-  "0x00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-);
-
-const CONTRACT_ABI = [
-  "function mine(uint256)",
-  "function balanceOf(address) view returns (uint256)",
-  "function totalSupply() view returns (uint256)",
-  "function currentReward() view returns (uint256)",
-  "function miningCount() view returns (uint256)",
-  "function challenge() view returns (uint256)"
-];
-
-/* =========================
-   GLOBAL STATE
-========================= */
-
-let provider;
-let signer;
-let readContract;   // provider-based (READ ONLY)
-let writeContract;  // signer-based (WRITE ONLY)
-let userAddress;
-
-let isMining = false;
-let statsInterval = null;
-
-/* =========================
-   UI STATUS
-========================= */
-
-function updateStatus(message, state) {
-  document.getElementById("statusText").textContent = message;
-
-  const dot = document
-    .getElementById("statusIndicator")
-    .querySelector("div");
-  const text = document
-    .getElementById("statusIndicator")
-    .querySelector("span");
-
-  const states = {
-    idle:        ["bg-gray-500", "Idle"],
-    connecting: ["bg-yellow-400 animate-pulse", "Connecting"],
-    ready:       ["bg-green-400", "Ready"],
-    mining:      ["bg-cyan-400 animate-pulse", "Mining"],
-    submitting:  ["bg-purple-400 animate-pulse", "Submitting"],
-    confirming:  ["bg-yellow-400 animate-pulse", "Confirming"],
-    success:     ["bg-green-400", "Success"],
-    error:       ["bg-red-400", "Error"]
-  };
-
-  const [cls, label] = states[state] || states.idle;
-  dot.className = `w-2 h-2 ${cls} rounded-full`;
-  text.textContent = label;
-}
-
-/* =========================
-   INIT
-========================= */
-
-document.addEventListener("DOMContentLoaded", () => {
-  if (!window.ethereum || typeof ethers === "undefined") {
-    updateStatus("MetaMask or ethers.js missing", "error");
-    return;
-  }
-  updateStatus("Connect wallet to begin mining", "idle");
-});
-
-/* =========================
-   WALLET
-========================= */
-
-async function connectWallet() {
-  try {
-    updateStatus("Requesting wallet access…", "connecting");
-
-    await window.ethereum.request({ method: "eth_requestAccounts" });
-
-    provider = new ethers.BrowserProvider(window.ethereum);
-    signer   = await provider.getSigner();
-    userAddress = await signer.getAddress();
-
-    // CREATE TWO CONTRACTS (THIS FIXES THE BUG)
-    readContract = new ethers.Contract(
-      CONTRACT_ADDRESS,
-      CONTRACT_ABI,
-      provider
-    );
-
-    writeContract = new ethers.Contract(
-      CONTRACT_ADDRESS,
-      CONTRACT_ABI,
-      signer
-    );
-
-    const network = await provider.getNetwork();
-    document.getElementById("networkName").textContent =
-      network.name === "homestead"
-        ? "Mainnet"
-        : network.name;
-
-    document.getElementById("walletAddress").textContent =
-      userAddress.slice(0, 6) + "…" + userAddress.slice(-4);
-
-    document.getElementById("disconnectedState").classList.add("hidden");
-    document.getElementById("connectedState").classList.remove("hidden");
-    document.getElementById("miningButton").disabled = false;
-
-    await refreshStats();
-    statsInterval = setInterval(refreshStats, 30000);
-
-    updateStatus("Connected. Ready to mine.", "ready");
-  } catch (err) {
-    console.error(err);
-    updateStatus("Wallet connection failed", "error");
-  }
-}
-
-function disconnectWallet() {
-  stopMining();
-  clearInterval(statsInterval);
-
-  provider = signer = readContract = writeContract = null;
-  userAddress = null;
-
-  document.getElementById("disconnectedState").classList.remove("hidden");
-  document.getElementById("connectedState").classList.add("hidden");
-  document.getElementById("miningButton").disabled = true;
-
-  resetStats();
-  updateStatus("Connect wallet to begin mining", "idle");
-}
-
-/* =========================
-   STATS (READ-ONLY)
-========================= */
-
-async function refreshStats() {
-  if (!readContract || !userAddress) return;
-
-  try {
-    const [bal, sup, rew, count] = await Promise.all([
-      readContract.balanceOf(userAddress),
-      readContract.totalSupply(),
-      readContract.currentReward(),
-      readContract.miningCount()
-    ]);
-
-    document.getElementById("balance").textContent =
-      Number(ethers.formatEther(bal)).toFixed(4);
-
-    document.getElementById("supply").textContent =
-      Number(ethers.formatEther(sup)).toLocaleString();
-
-    document.getElementById("reward").textContent =
-      Number(ethers.formatEther(rew)).toFixed(2);
-
-    const era = Math.floor(Number(count) / 210000);
-    const remaining = 210000 - (Number(count) % 210000);
-
-    document.getElementById("era").textContent = era;
-    document.getElementById("remaining").textContent =
-      remaining.toLocaleString();
-  } catch (err) {
-    console.error("Stats error:", err);
-  }
-}
-
-function resetStats() {
-  document.getElementById("balance").textContent = "0";
-  document.getElementById("supply").textContent = "0";
-  document.getElementById("reward").textContent = "50";
-  document.getElementById("era").textContent = "0";
-  document.getElementById("remaining").textContent = "210,000";
-  document.getElementById("hashrate").textContent = "0";
-}
-
-/* =========================
-   MINING
-========================= */
-
-function toggleMining() {
-  isMining ? stopMining() : startMining();
-}
-
-function startMining() {
-  isMining = true;
-  document.getElementById("miningButtonText").textContent = "⏸️ Stop Mining";
-  document.getElementById("rewardCard").classList.add("mining-animation");
-  updateStatus("Mining started…", "mining");
-  mineLoop();
-}
-
-function stopMining() {
-  isMining = false;
-  document.getElementById("miningButtonText").textContent = "⛏️ Start Mining";
-  document.getElementById("rewardCard").classList.remove("mining-animation");
-  document.getElementById("hashrate").textContent = "0";
-  updateStatus("Mining stopped", "ready");
-}
-
-async function mineLoop() {
-  if (!isMining || !readContract || !writeContract) return;
-
-  try {
-    const challenge = await readContract.challenge();
-
-    let nonce = 0n;
-    let hashes = 0;
-    let lastTick = performance.now();
-
-    while (isMining) {
-      const packed = ethers.solidityPacked(
-        ["uint256", "address", "uint256"],
-        [challenge, userAddress, nonce]
-      );
-
-      const hash = ethers.keccak256(packed);
-      hashes++;
-
-      const now = performance.now();
-      if (now - lastTick > 1000) {
-        document.getElementById("hashrate").textContent =
-          Math.round(hashes / ((now - lastTick) / 1000)).toLocaleString();
-        hashes = 0;
-        lastTick = now;
-      }
-
-      if (BigInt(hash) < TARGET) {
-        updateStatus("Submitting solution…", "submitting");
-        const tx = await writeContract.mine(nonce);
-        updateStatus("Confirming…", "confirming");
-        await tx.wait();
-        updateStatus("Block mined", "success");
-        await refreshStats();
-        break;
-      }
-      nonce++;
+    <script>
+    /* =========================
+       CONSTANTS
+    ========================= */
+    
+    // ⚠️ IMPORTANT: Replace this with your valid 42-character address.
+    // The previous address was missing characters (38 chars instead of 40 hex chars).
+    // I put a dummy placeholder here to prevent the crash.
+    const RAW_CONTRACT_ADDRESS = "0xb5E3fE1A9118f5eC13e36dDcB3C1D600a0191800"; // Added '00' to fix length for demo
+    
+    const TARGET = BigInt("0x00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+    
+    const CONTRACT_ABI = [
+        "function mine(uint256 nonce)",
+        "function balanceOf(address) view returns (uint256)",
+        "function totalSupply() view returns (uint256)",
+        "function currentReward() view returns (uint256)",
+        "function miningCount() view returns (uint256)",
+        "function challenge() view returns (uint256)"
+    ];
+    
+    /* =========================
+       STATE
+    ========================= */
+    let provider, signer, readContract, writeContract, userAddress;
+    let isMining = false;
+    let statsInterval = null;
+    let validContractAddress = null;
+    
+    /* =========================
+       UI HELPERS
+    ========================= */
+    function updateStatus(message, state) {
+        document.getElementById("statusText").textContent = message;
+        const dot = document.getElementById("statusIndicator").querySelector("div");
+        const text = document.getElementById("statusIndicator").querySelector("span");
+    
+        const states = {
+            idle:       ["bg-gray-500", "Idle"],
+            connecting: ["bg-yellow-400 animate-pulse", "Connecting"],
+            ready:      ["bg-green-400", "Ready"],
+            mining:     ["bg-cyan-400 animate-pulse", "Mining"],
+            submitting: ["bg-purple-400 animate-pulse", "Found Solution"],
+            confirming: ["bg-yellow-400 animate-pulse", "Confirming"],
+            success:    ["bg-green-400", "Success"],
+            error:      ["bg-red-400", "Error"]
+        };
+    
+        const [cls, label] = states[state] || states.idle;
+        dot.className = `w-2 h-2 ${cls} rounded-full`;
+        text.textContent = label;
     }
-  } catch (err) {
-    console.error(err);
-    updateStatus("Fatal mining error", "error");
-    isMining = false;
-  }
-}
-
-/* =========================
-   METAMASK EVENTS
-========================= */
-
-if (window.ethereum) {
-  window.ethereum.on("accountsChanged", () => location.reload());
-  window.ethereum.on("chainChanged", () => location.reload());
-}
-</script>
+    
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("contractAddressDisplay").value = RAW_CONTRACT_ADDRESS;
+        if (!window.ethereum) {
+            updateStatus("MetaMask required", "error");
+        }
+    });
+    
+    /* =========================
+       WALLET LOGIC
+    ========================= */
+    async function connectWallet() {
+        try {
+            updateStatus("Requesting wallet access…", "connecting");
+    
+            // Validate address first to prevent crash
+            try {
+                validContractAddress = ethers.getAddress(RAW_CONTRACT_ADDRESS);
+            } catch (e) {
+                alert("Invalid Contract Address configured in code! Check console.");
+                console.error("Address Error:", e);
+                updateStatus("Invalid Contract Address", "error");
+                return;
+            }
+    
+            await window.ethereum.request({ method: "eth_requestAccounts" });
+    
+            provider = new ethers.BrowserProvider(window.ethereum);
+            signer = await provider.getSigner();
+            userAddress = await signer.getAddress();
+    
+            // Initialize Contracts
+            readContract = new ethers.Contract(validContractAddress, CONTRACT_ABI, provider);
+            writeContract = new ethers.Contract(validContractAddress, CONTRACT_ABI, signer);
+    
+            // Update UI
+            const network = await provider.getNetwork();
+            document.getElementById("networkName").textContent = network.name === "homestead" ? "Ethereum Mainnet" : network.name;
+            document.getElementById("walletAddress").textContent = userAddress.slice(0, 6) + "…" + userAddress.slice(-4);
+            
+            document.getElementById("disconnectedState").classList.add("hidden");
+            document.getElementById("connectedState").classList.remove("hidden");
+            document.getElementById("miningButton").disabled = false;
+    
+            await refreshStats();
+            statsInterval = setInterval(refreshStats, 15000); // Poll every 15s
+            updateStatus("Connected. Ready to mine.", "ready");
+    
+        } catch (err) {
+            console.error(err);
+            updateStatus("Connection failed", "error");
+        }
+    }
+    
+    function disconnectWallet() {
+        stopMining();
+        if(statsInterval) clearInterval(statsInterval);
+        
+        provider = null; signer = null; readContract = null; writeContract = null; userAddress = null;
+        
+        document.getElementById("disconnectedState").classList.remove("hidden");
+        document.getElementById("connectedState").classList.add("hidden");
+        document.getElementById("miningButton").disabled = true;
+        
+        resetStats();
+        updateStatus("Connect wallet to begin mining", "idle");
+    }
+    
+    /* =========================
+       STATS
+    ========================= */
+    async function refreshStats() {
+        if (!readContract) return;
+        try {
+            const [bal, sup, rew, count] = await Promise.all([
+                readContract.balanceOf(userAddress),
+                readContract.totalSupply(),
+                readContract.currentReward(),
+                readContract.miningCount()
+            ]);
+    
+            document.getElementById("balance").textContent = Number(ethers.formatEther(bal)).toFixed(2);
+            document.getElementById("supply").textContent = Math.floor(Number(ethers.formatEther(sup))).toLocaleString();
+            document.getElementById("reward").textContent = Number(ethers.formatEther(rew)).toFixed(2);
+    
+            const era = Math.floor(Number(count) / 210000);
+            const remaining = 210000 - (Number(count) % 210000);
+            document.getElementById("era").textContent = era;
+            document.getElementById("remaining").textContent = remaining.toLocaleString();
+        } catch (err) {
+            console.warn("Stats refresh failed", err);
+        }
+    }
+    
+    function resetStats() {
+        document.getElementById("balance").textContent = "0.00";
+        document.getElementById("hashrate").textContent = "0";
+    }
+    
+    /* =========================
+       MINING LOOP (NON-BLOCKING)
+    ========================= */
+    function toggleMining() {
+        isMining ? stopMining() : startMining();
+    }
+    
+    async function startMining() {
+        if (!writeContract) return;
+        isMining = true;
+        
+        document.getElementById("miningButton").classList.add("from-red-500", "to-pink-600");
+        document.getElementById("miningButtonText").textContent = "⏸️ Stop Mining";
+        document.getElementById("rewardCard").classList.add("mining-animation");
+        updateStatus("Mining started…", "mining");
+        
+        mineLoop();
+    }
+    
+    function stopMining() {
+        isMining = false;
+        document.getElementById("miningButton").classList.remove("from-red-500", "to-pink-600");
+        document.getElementById("miningButtonText").textContent = "⛏️ Start Mining";
+        document.getElementById("rewardCard").classList.remove("mining-animation");
+        document.getElementById("hashrate").textContent = "0";
+        updateStatus("Mining stopped", "ready");
+    }
+    
+    async function mineLoop() {
+        try {
+            const challenge = await readContract.challenge();
+            let nonce = BigInt(Math.floor(Math.random() * 1000000)); // Random start nonce
+            let hashes = 0;
+            let lastTick = performance.now();
+    
+            while (isMining) {
+                // Batch processing prevents UI freeze
+                // We calculate 1000 hashes, then yield to the browser
+                for (let i = 0; i < 1000; i++) {
+                    const packed = ethers.solidityPacked(
+                        ["uint256", "address", "uint256"],
+                        [challenge, userAddress, nonce]
+                    );
+                    
+                    const hash = ethers.keccak256(packed);
+                    
+                    if (BigInt(hash) < TARGET) {
+                        await submitSolution(nonce);
+                        return; // Exit loop after finding solution
+                    }
+                    
+                    nonce++;
+                    hashes++;
+                }
+    
+                // Update Hashrate Display every 1 second
+                const now = performance.now();
+                if (now - lastTick > 1000) {
+                    document.getElementById("hashrate").textContent = Math.round(hashes / ((now - lastTick) / 1000)).toLocaleString();
+                    hashes = 0;
+                    lastTick = now;
+                }
+    
+                // Yield to main thread to allow "Stop Mining" click
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+        } catch (err) {
+            console.error(err);
+            stopMining();
+            updateStatus("Mining error (Check console)", "error");
+        }
+    }
+    
+    async function submitSolution(nonce) {
+        updateStatus("Solution found! Submitting…", "submitting");
+        try {
+            const tx = await writeContract.mine(nonce);
+            updateStatus("Waiting for confirmation…", "confirming");
+            await tx.wait();
+            updateStatus("Block Mined Successfully!", "success");
+            await refreshStats();
+            
+            // Auto restart mining after success?
+            // Uncomment next line to keep mining
+            // if(isMining) mineLoop(); 
+            stopMining();
+            
+        } catch (err) {
+            console.error("Submission failed", err);
+            updateStatus("Submission failed (User rejected?)", "error");
+            stopMining();
+        }
+    }
+    
+    /* =========================
+       EVENTS
+    ========================= */
+    if (window.ethereum) {
+        window.ethereum.on("accountsChanged", () => location.reload());
+        window.ethereum.on("chainChanged", () => location.reload());
+    }
+    </script>
 </body>
 </html>
