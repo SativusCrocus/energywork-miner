@@ -237,7 +237,7 @@
                         <input
                             id="contractAddress"
                             type="text"
-                            value="0xB5e3fE1a9118F5ec13E36DDcb3c1D600a01918"
+                            value="0xb5E3fE1A9118f5eC13e36dDcB3C1D600a01918"
                             class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm font-mono focus:border-cyan-500 focus:outline-none transition-colors"
                             readonly
                         >
@@ -276,10 +276,10 @@
     </div>
     
     <script>
-        // Checksummed contract address (fixes UNCONFIGURED_NAME error in ethers v6)
-        const CONTRACT_ADDRESS = "0xB5e3fE1a9118F5ec13E36DDcb3c1D600a01918";
+        // Checksummed address - fixes UNCONFIGURED_NAME
+        const CONTRACT_ADDRESS = "0xb5E3fE1A9118f5eC13e36dDcB3C1D600a01918";
         
-        // Hard-coded TARGET (constant from contract)
+        // Hard-coded TARGET (constant)
         const TARGET = BigInt("0x00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         
         const CONTRACT_ABI = [
@@ -295,17 +295,37 @@
         let isMining = false;
         let statsInterval;
         
+        // Define updateStatus FIRST
+        function updateStatus(message, state) {
+            document.getElementById("statusText").textContent = message;
+            
+            const dot = document.getElementById("statusIndicator").querySelector("div");
+            const text = document.getElementById("statusIndicator").querySelector("span");
+            
+            const states = {
+                idle: {dot: "bg-gray-500", text: "Idle"},
+                connecting: {dot: "bg-yellow-400 animate-pulse", text: "Connecting"},
+                ready: {dot: "bg-green-400", text: "Ready"},
+                mining: {dot: "bg-cyan-400 animate-pulse", text: "Mining"},
+                submitting: {dot: "bg-purple-400 animate-pulse", text: "Submitting"},
+                confirming: {dot: "bg-yellow-400 animate-pulse", text: "Confirming"},
+                success: {dot: "bg-green-400", text: "Success"},
+                error: {dot: "bg-red-400", text: "Error"}
+            };
+            
+            const config = states[state] || states.idle;
+            dot.className = `w-2 h-2 ${config.dot} rounded-full`;
+            text.textContent = config.text;
+            text.className = `text-xs ${state === 'error' ? 'text-red-400' : 'text-gray-400'}`;
+        }
+        
+        // Init on DOM ready
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof ethers === 'undefined') {
-                updateStatus("Error: ethers.js failed to load. Refresh page.", "error");
+                updateStatus("ethers.js failed to load. Refresh page.", "error");
                 return;
             }
-            
-            if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
-                updateStatus("Mobile detected: Mining limited. Desktop recommended.", "idle");
-            } else {
-                updateStatus("Connect wallet to begin mining", "idle");
-            }
+            updateStatus("Connect wallet to begin mining", "idle");
         });
         
         async function connectWallet() {
@@ -322,9 +342,9 @@
             try {
                 updateStatus("Requesting access...", "connecting");
                 
-                provider = new ethers.BrowserProvider(window.ethereum);
-                await provider.send("eth_requestAccounts", []);
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
                 
+                provider = new ethers.BrowserProvider(window.ethereum);
                 signer = await provider.getSigner();
                 userAddress = await signer.getAddress();
                 
@@ -349,11 +369,132 @@
             }
         }
         
-        // ... (rest of the script remains the same as previous version)
+        function disconnectWallet() {
+            stopMining();
+            clearInterval(statsInterval);
+            
+            provider = signer = contract = userAddress = null;
+            
+            document.getElementById("disconnectedState").classList.remove("hidden");
+            document.getElementById("connectedState").classList.add("hidden");
+            document.getElementById("miningButton").disabled = true;
+            
+            resetStats();
+            updateStatus("Connect wallet to begin mining", "idle");
+        }
         
-        // (Full script from previous response, with only CONTRACT_ADDRESS updated to checksummed)
+        async function refreshStats() {
+            if (!contract || !userAddress) return;
+            try {
+                const [bal, sup, rew, count] = await Promise.all([
+                    contract.balanceOf(userAddress),
+                    contract.totalSupply(),
+                    contract.currentReward(),
+                    contract.miningCount()
+                ]);
+                
+                document.getElementById("balance").textContent = parseFloat(ethers.formatEther(bal)).toFixed(4);
+                document.getElementById("supply").textContent = parseFloat(ethers.formatEther(sup)).toLocaleString();
+                document.getElementById("reward").textContent = parseFloat(ethers.formatEther(rew)).toFixed(2);
+                
+                const era = Math.floor(Number(count) / 210000);
+                const remaining = 210000 - (Number(count) % 210000);
+                document.getElementById("era").textContent = era;
+                document.getElementById("remaining").textContent = remaining.toLocaleString();
+            } catch (error) {
+                console.error("Stats error:", error);
+            }
+        }
         
-        // For brevity, the full script is identical except the checksum address and input value.
+        function resetStats() {
+            document.getElementById("balance").textContent = "0";
+            document.getElementById("supply").textContent = "0";
+            document.getElementById("reward").textContent = "50";
+            document.getElementById("era").textContent = "0";
+            document.getElementById("remaining").textContent = "210,000";
+            document.getElementById("hashrate").textContent = "0";
+        }
+        
+        function toggleMining() {
+            if (isMining) stopMining();
+            else startMining();
+        }
+        
+        function startMining() {
+            isMining = true;
+            document.getElementById("miningButtonText").textContent = "⏸️ Stop Mining";
+            document.getElementById("rewardCard").classList.add("mining-animation");
+            updateStatus("Starting miner...", "mining");
+            mineLoop();
+        }
+        
+        function stopMining() {
+            isMining = false;
+            document.getElementById("miningButtonText").textContent = "⛏️ Start Mining";
+            document.getElementById("rewardCard").classList.remove("mining-animation");
+            document.getElementById("hashrate").textContent = "0";
+            updateStatus("Mining stopped", "ready");
+        }
+        
+        async function mineLoop() {
+            if (!isMining || !contract) return;
+            
+            try {
+                updateStatus("Fetching challenge...", "mining");
+                const challenge = await contract.challenge();
+                
+                let nonce = 0n;
+                let hashes = 0n;
+                let startTime = performance.now();
+                
+                updateStatus("Mining active...", "mining");
+                
+                while (isMining) {
+                    const packed = ethers.solidityPacked(["uint256", "address", "uint256"], [challenge, userAddress, nonce]);
+                    const hash = ethers.keccak256(packed);
+                    
+                    hashes++;
+                    
+                    if (performance.now() - startTime > 1000) {
+                        const rate = Math.round(Number(hashes) / ((performance.now() - startTime) / 1000));
+                        document.getElementById("hashrate").textContent = rate.toLocaleString();
+                        hashes = 0n;
+                        startTime = performance.now();
+                    }
+                    
+                    if (BigInt(hash) < TARGET) {
+                        updateStatus("Solution found! Submitting...", "submitting");
+                        try {
+                            const tx = await contract.mine(nonce);
+                            updateStatus("Confirming transaction...", "confirming");
+                            await tx.wait();
+                            updateStatus("Mined successfully!", "success");
+                            await refreshStats();
+                            setTimeout(() => isMining && mineLoop(), 2000);
+                            return;
+                        } catch (err) {
+                            console.error(err);
+                            updateStatus("Tx failed, retrying...", "error");
+                            setTimeout(() => isMining && mineLoop(), 3000);
+                        }
+                    }
+                    nonce++;
+                }
+            } catch (error) {
+                console.error(error);
+                updateStatus("Mining error: " + (error.message || "Unknown"), "error");
+                setTimeout(() => isMining && mineLoop(), 3000);
+            }
+        }
+        
+        // MetaMask events
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length === 0) disconnectWallet();
+                else location.reload();
+            });
+            window.ethereum.on('chainChanged', () => location.reload());
+        }
     </script>
 </body>
 </html>
