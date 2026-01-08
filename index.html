@@ -201,10 +201,8 @@
        CONSTANTS
     ========================= */
     
-    // ⚠️ IMPORTANT: Replace this with your valid 42-character address.
-    // The previous address was missing characters (38 chars instead of 40 hex chars).
-    // I put a dummy placeholder here to prevent the crash.
-    const RAW_CONTRACT_ADDRESS = "0xb5E3fE1A9118f5eC13e36dDcB3C1D600a0191800"; // Added '00' to fix length for demo
+    // Updated with your full address
+    const RAW_CONTRACT_ADDRESS = "0xB5E3fbE1A9118f5eC13e3c6dDcB3C1D600A01918"; 
     
     const TARGET = BigInt("0x00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
     
@@ -263,11 +261,10 @@
         try {
             updateStatus("Requesting wallet access…", "connecting");
     
-            // Validate address first to prevent crash
+            // Validate address first
             try {
                 validContractAddress = ethers.getAddress(RAW_CONTRACT_ADDRESS);
             } catch (e) {
-                alert("Invalid Contract Address configured in code! Check console.");
                 console.error("Address Error:", e);
                 updateStatus("Invalid Contract Address", "error");
                 return;
@@ -429,9 +426,6 @@
             updateStatus("Block Mined Successfully!", "success");
             await refreshStats();
             
-            // Auto restart mining after success?
-            // Uncomment next line to keep mining
-            // if(isMining) mineLoop(); 
             stopMining();
             
         } catch (err) {
